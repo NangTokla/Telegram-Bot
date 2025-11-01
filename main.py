@@ -1,4 +1,5 @@
 import os
+import json
 import asyncio
 import uvicorn
 from fastapi import FastAPI
@@ -6,16 +7,21 @@ from mcstatus import JavaServer
 from time import sleep
 from telegram import Bot
 
-config: dict = {
-    "server": {
-        "server_ip_addr": os.getenv("server_ip_addr"),
-        "server_ip_port": os.getenv("server_ip_port")
-    },
-    "bot": {
-        "token": os.getenv("bot_token"),
-        "chat_id": os.getenv("chat_id"),
+if ("config.json" in os.listdir(os.getcwd())):
+    with open("config.json", "r") as file:
+        config: dict = json.load(file)
+else:
+    config: dict = {
+        "server": {
+            "server_ip_addr": os.getenv("server_ip_addr"),
+            "server_ip_port": os.getenv("server_ip_port")
+        },
+        "bot": {
+            "token": os.getenv("bot_token"),
+            "chat_id": os.getenv("chat_id"),
+        }
     }
-}
+print(config)
 
 server_data: dict = config.get("server")
 bot_data: dict = config.get("bot")
@@ -62,12 +68,10 @@ async def handle_player_broadcast(
     live_player_list: list
 ) -> None:
     # check if there's player that left
-    new_temp_player_list = temp_player_list.copy()
     for player in temp_player_list:
         if player not in live_player_list:
-            new_temp_player_list.remove(player)
+            temp_player_list.remove(player)
             await broadcast_players(player, False)
-    temp_player_list = new_temp_player_list
     # check if there's player joining
     for player in live_player_list:
         if player not in temp_player_list:
@@ -140,7 +144,7 @@ async def bot_loop() -> None:
 
 async def web_loop() -> None:
     asyncio.create_task(bot_loop()) # bot loop
-    port = int(os.getenv("PORT"))
+    port = 6000
     config_uvicorn = uvicorn.Config(
         app=web_app, 
         host="0.0.0.0",
