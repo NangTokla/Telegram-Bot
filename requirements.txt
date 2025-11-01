@@ -1,4 +1,5 @@
-uvcorn
+uvicorn
 fastapi
 mcstatus
 python-telegram-bot
+
