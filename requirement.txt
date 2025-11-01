@@ -1,0 +1,4 @@
+uvcorn
+fastapi
+mcstatus
+python-telegram-bot
